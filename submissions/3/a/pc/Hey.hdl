@@ -1,0 +1,19 @@
+CHIP Hey {
+    IN a, b;
+    OUT outA, outB, outC, outD;
+
+    PARTS:
+    DMux4Way(
+            // Input
+             in=true,
+
+            // Split 
+             sel[0]=a, 
+             sel[1]=b,
+
+            //  Out
+             a=outA, 
+             b=outB, 
+             c=outC, 
+             d=outD);
+}

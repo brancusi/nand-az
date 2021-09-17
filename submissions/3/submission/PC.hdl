@@ -1,0 +1,65 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/03/a/PC.hdl
+
+/**
+ * A 16-bit counter with load and reset control bits.
+ * if      (reset[t] == 1) out[t+1] = 0
+ * else if (load[t] == 1)  out[t+1] = in[t]
+ * else if (inc[t] == 1)   out[t+1] = out[t] + 1  (integer addition)
+ * else                    out[t+1] = out[t]
+ */
+
+CHIP PC {
+    IN in[16],load,inc,reset;
+    OUT out[16];
+
+    PARTS:
+    // Should load at all?
+    Or(a=reset, b=load, out=orResetLoad);
+    Or(a=orResetLoad, b=inc, out=shouldLoad);
+
+    // Build branching chain
+    DMux(in=true, sel=reset, a=resetFalse, b=resetTrue);
+    DMux(in=resetFalse, sel=load, a=loadFalse, b=loadTrue);
+    DMux(in=loadFalse, sel=inc, a=incFalse, b=incTrue);
+
+    // Create inc middleware
+    Inc16(in=otherOut, out=incOut);
+
+    // Mux the correct branch
+    // Match a truth for 3 bits as follows based on branching
+
+    // -------------------
+    // 000 | default | a
+    // 001 | reset   | b
+    // 010 | load    | c
+    // 011 | reset   | d
+    // 100 | inc     | e
+    // 101 | reset   | f
+    // 110 | load    | g
+    // 111 | reset   | h
+    Mux8Way16(
+             sel[0]=resetTrue, 
+             sel[1]=loadTrue,
+             sel[2]=incTrue,
+             
+             a=otherOut,
+             b=false, 
+             c=in, 
+             d=false,
+             e=incOut, 
+             f=false, 
+             g=in, 
+             h=false,
+
+             out=splitterOut
+             );
+
+    // Send out to the register
+    // We need to create two outs to satisfy the simulator, second out 
+    // simply feeds back around
+    Register(in=splitterOut, load=shouldLoad, out=out, out=otherOut);
+
+}

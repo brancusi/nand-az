@@ -1,0 +1,34 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/03/a/RAM64.hdl
+
+/**
+ * Memory of 64 registers, each 16 bit-wide. Out holds the value
+ * stored at the memory location specified by address. If load==1, then 
+ * the in value is loaded into the memory location specified by address 
+ * (the loaded value will be emitted to out from the next time step onward).
+ */
+
+CHIP RAM64 {
+    IN in[16], load, address[6];
+    OUT out[16];
+
+    PARTS:
+    // Dmux the 3 high bits. This will isolate the correct ram chip. Use this as the load to the chips.
+    DMux8Way(in=load, sel=address[3..5], a=aOut, b=bOut, c=cOut, d=dOut, e=eOut, f=fOut, g=gOut, h=hOut);
+    
+    // Use the low 3 bits to select the register within each chip as it repeats.
+    RAM8(in=in, load=aOut, address=address[0..2], out=aRamOut);
+    RAM8(in=in, load=bOut, address=address[0..2], out=bRamOut);
+    RAM8(in=in, load=cOut, address=address[0..2], out=cRamOut);
+    RAM8(in=in, load=dOut, address=address[0..2], out=dRamOut);
+
+    RAM8(in=in, load=eOut, address=address[0..2], out=eRamOut);
+    RAM8(in=in, load=fOut, address=address[0..2], out=fRamOut);
+    RAM8(in=in, load=gOut, address=address[0..2], out=gRamOut);
+    RAM8(in=in, load=hOut, address=address[0..2], out=hRamOut);
+
+    // Mux the register value out and select on the high 3 bits of the address again to select the right ram chip out.
+    Mux8Way16(a=aRamOut, b=bRamOut, c=cRamOut, d=dRamOut, e=eRamOut, f=fRamOut, g=gRamOut, h=hRamOut, sel=address[3..5], out=out);
+}

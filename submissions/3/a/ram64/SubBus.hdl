@@ -1,0 +1,24 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/03/a/RAM64.hdl
+
+/**
+ * Memory of 64 registers, each 16 bit-wide. Out holds the value
+ * stored at the memory location specified by address. If load==1, then 
+ * the in value is loaded into the memory location specified by address 
+ * (the loaded value will be emitted to out from the next time step onward).
+ */
+
+CHIP SubBus {
+    IN in[6];
+    OUT low, high;
+
+    PARTS:
+    Or(a=in[0], b=in[1], out=or01);
+    Or(a=or01, b=in[2], out=low);
+    
+    Or(a=in[3], b=in[4], out=or34);
+    Or(a=or34, b=in[5], out=high);
+
+}
