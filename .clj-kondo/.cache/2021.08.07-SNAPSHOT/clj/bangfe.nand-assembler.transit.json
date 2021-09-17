@@ -1,1 +1,0 @@
-["^ ","~$greet",["^ ","~:row",5,"~:col",1,"~:fixed-arities",["~#set",[1]],"~:name","^0","~:ns","~$bangfe.nand-assembler","~:top-ns","^7"],"~$-main",["^ ","^1",12,"^2",1,"~:varargs-min-arity",0,"^5","^9","^6","^7","^8","^7"],"~:filename","/Users/nevadasmith/Documents/projects/nand2tetris/submissions/Week - 06/nand-assembler/src/bangfe/nand_assembler.clj"]
