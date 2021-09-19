@@ -11,3 +11,9 @@ HardwareSimulator.sh
 ```bash
 CPUEmulator.sh
 ```
+
+### Run the assembler emulator
+
+```bash
+Assembler.sh
+```

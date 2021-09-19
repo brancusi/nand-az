@@ -1,0 +1,23 @@
+// Starting at line 4708
+(RET_ADDRESS_CALL73)
+@SP
+AM=M-1
+D=M
+@ponggame.0
+M=D
+@SP
+M=M+1
+A=M-1
+M=0
+@54
+0;JMP
+(ponggame.getinstance)
+@ponggame.0
+D=M
+@SP
+AM=M+1
+A=A-1
+M=D
+@54
+0;JMP
+(ponggame.run)

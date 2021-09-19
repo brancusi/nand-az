@@ -1,0 +1,25 @@
+// Starting at line 4521
+@0
+AM=M-1
+D=M
+@16
+M=D
+@0
+M=M+1
+A=M-1
+M=0
+@54
+0;JMP
+@16
+D=M
+@0
+AM=M+1
+A=A-1
+M=D
+@54
+0;JMP
+@0
+AM=M+1
+A=A-1
+M=0
+@2
