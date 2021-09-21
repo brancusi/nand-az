@@ -1,4 +1,4 @@
-(ns bangfe.nand-assembler
+(ns bangfe.assembler
   (:require [clojure.java.io]
             [clojure.string :refer [trim]]
             [tupelo.string :as ts])

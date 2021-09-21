@@ -1,12 +1,10 @@
 {:paths ["src" "resources"]
  :deps {org.clojure/clojure {:mvn/version "1.10.3"}
+        org.clojure/tools.cli {:mvn/version "1.0.206"}
         tupelo/tupelo {:mvn/version "21.09.07"}
         postmortem/postmortem {:mvn/version "0.5.0"}}
  :aliases
- {:run-m {:main-opts ["-m" "bangfe.nand-assembler"]}
-  :run-x {:ns-default bangfe.nand-assembler
-          :exec-fn greet
-          :exec-args {:name "Clojure"}}
+ {:dev {:ns-default bangfe.core}
   :test {:extra-paths ["test"]
          :extra-deps {org.clojure/test.check {:mvn/version "1.1.0"}
                       io.github.cognitect-labs/test-runner
@@ -16,6 +14,6 @@
   :uberjar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.1.267"}}
             :exec-fn hf.depstar/uberjar
             :exec-args {:aot true
-                        :jar "nand-assembler.jar"
-                        :main-class "bangfe.nand-assembler"
+                        :jar "nand.jar"
+                        :main-class "bangfe.core"
                         :sync-pom true}}}}

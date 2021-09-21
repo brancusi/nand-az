@@ -15,3 +15,4 @@
 .hg/
 
 .clj-kondo/.cache
+.lsp

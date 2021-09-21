@@ -17,3 +17,9 @@ CPUEmulator.sh
 ```bash
 Assembler.sh
 ```
+
+### Run the VM emulator
+
+```bash
+VMEmulator.sh
+```
