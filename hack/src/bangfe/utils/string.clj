@@ -10,6 +10,3 @@
        (map trim)
        (filter seq)))
 
-(defn tokenize
-  [line]
-  (clojure.string/split line #" "))
