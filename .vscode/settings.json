@@ -1,0 +1,26 @@
+{
+  "files.exclude": {
+    "hack/target": true,
+    "hack/classes": true,
+    "hack/checkouts": true,
+    "hack/**/*.jar": true,
+    "hack/**/*.class": true,
+    "hack/.calva/output-window/": true,
+    "hack/.cpcache": true,
+    "hack/.lein-*": true,
+    "hack/.lsp/sqlite*.db": true,
+    "hack/.nrepl-history": true,
+    "hack/.nrepl-port": true,
+    "hack/.rebel_readline_history": true,
+    "hack/.socket-repl-port": true,
+    "hack/**/.hgignore": true,
+    "hack/**/.hg/": true,
+    "hack/.clj-kondo/.cache": true,
+    "hack/**/.lsp": true,
+    "**/.DS_Store": true,
+    ".clj-kondo/.cache": true,
+    "**/submissions/Week - 06/nand-assembler/.lsp/": true,
+    "submissions/Week - 06/.clj-kondo/.cache": true,
+    "**/submissions/Week - 06/.calva/": true
+  }
+}
