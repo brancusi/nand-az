@@ -4,16 +4,12 @@ D=A
 A=M
 M=D
 @SP
-A=M
-@SP
 M=M+1
 @8
 D=A
 @SP
 A=M
 M=D
-@SP
-A=M
 @SP
 M=M+1
 @SP
@@ -28,6 +24,7 @@ A=M
 D=M+D
 M=D
 @SP
-A=M
-@SP
 M=M+1
+(END_LOOP_6yTUsdl5V59zZxGb2DXvv)
+@END_LOOP_6yTUsdl5V59zZxGb2DXvv
+0;JMP

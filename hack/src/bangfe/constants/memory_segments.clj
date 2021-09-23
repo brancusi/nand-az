@@ -1,19 +1,34 @@
 (ns bangfe.constants.memory-segments)
 
 (def config
-  {:pointer-addresses {"sp" 0
-                       "local" 1
-                       "argument" 2
-                       "this" 3
-                       "that" 4
-                       "static" 5
-                       "pointer" 6
-                       "temp" 7}
-   :segment-offsets {:sp 256
-                     :lcl 300
-                     :arg 400
-                     :this 3000
-                     :that 3010}})
+  ;; Static offsets
+  {:pointer-addresses {:sp 0
+                       :local 1
+                       :argument 2
+                       :pointer 3}
+
+  ;;  Dynamic offsets based on the pointer offset
+  ;;  i.e. this = RAM[3] - pointer + 0
+   :segment-offsets {:this 0
+                     :that 1
+                     :temp 2
+                     :static 3}})
+
+
+(defn offset-for
+  [key]
+  (let [key (if (keyword? key)
+              key
+              (keyword key))
+        pa (-> config
+               :pointer-addresses
+               key)]
+    (if pa
+      pa
+      (+ (offset-for :pointer) (-> config
+                                   :segment-offsets
+                                   key)))))
+
 
 ;; set RAM[0] 256,   // stack pointer
 ;; set RAM[1] 300,   // base address of the local segment

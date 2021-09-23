@@ -1,5 +1,5 @@
 (ns bangfe.utils.file
-  (:require [clojure.java.io]))
+  (:require [clojure.java.io :as io]))
 
 (defn to-file
   "Write a lazy seq to a file"

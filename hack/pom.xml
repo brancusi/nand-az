@@ -36,6 +36,11 @@
       <version>1.0.206</version>
     </dependency>
     <dependency>
+      <groupId>nano-id</groupId>
+      <artifactId>nano-id</artifactId>
+      <version>1.0.0</version>
+    </dependency>
+    <dependency>
       <groupId>tupelo</groupId>
       <artifactId>tupelo</artifactId>
       <version>21.09.07</version>
