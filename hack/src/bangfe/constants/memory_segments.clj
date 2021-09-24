@@ -5,14 +5,10 @@
   {:pointer-addresses {:sp 0
                        :local 1
                        :argument 2
-                       :pointer 3}
-
-  ;;  Dynamic offsets based on the pointer offset
-  ;;  i.e. this = RAM[3] - pointer + 0
-   :segment-offsets {:this 0
-                     :that 1
-                     :temp 2
-                     :static 3}})
+                       :pointer 3
+                       :this 3
+                       :that 4
+                       :temp 5}})
 
 
 (defn offset-for

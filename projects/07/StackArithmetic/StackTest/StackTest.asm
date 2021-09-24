@@ -1,3 +1,4 @@
+// ["push" "constant" "17"]
 @17
 D=A
 @SP
@@ -5,6 +6,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["push" "constant" "17"]
 @17
 D=A
 @SP
@@ -12,6 +14,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["eq"]
 @SP
 M=M-1
 @SP
@@ -22,25 +25,26 @@ M=M-1
 @SP
 A=M
 D=M-D
-@TRUE_-M1qUAdmEJr9efns2F1IF
+@TRUE_O4E6wK-NY34LZ1PJJ4hVB
 D;JEQ
-@FALSE_AVfHRQzVAHZ_CeHB8Uck0
+@FALSE_MLULvqq7SPCF9kXSNWINQ
 0;JMP
-(TRUE_-M1qUAdmEJr9efns2F1IF)
+(TRUE_O4E6wK-NY34LZ1PJJ4hVB)
 D=-1
 @SP
 A=M
 M=D
-@NEXT_OSe_TOyqE9gKOUi0huOdO
+@NEXT_DOpKjbodDYrcG83JHmTfO
 0;JMP
-(FALSE_AVfHRQzVAHZ_CeHB8Uck0)
+(FALSE_MLULvqq7SPCF9kXSNWINQ)
 D=0
 @SP
 A=M
 M=D
-(NEXT_OSe_TOyqE9gKOUi0huOdO)
+(NEXT_DOpKjbodDYrcG83JHmTfO)
 @SP
 M=M+1
+// ["push" "constant" "17"]
 @17
 D=A
 @SP
@@ -48,6 +52,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["push" "constant" "16"]
 @16
 D=A
 @SP
@@ -55,6 +60,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["eq"]
 @SP
 M=M-1
 @SP
@@ -65,25 +71,26 @@ M=M-1
 @SP
 A=M
 D=M-D
-@TRUE_vCzeAuX397S-7pqZvYp9f
+@TRUE__NvZaErqiJGUc-LpNXXN1
 D;JEQ
-@FALSE_boV9Dlj5L9u0vHWRX08TR
+@FALSE_DQNlE2CewWshBh2ajTljt
 0;JMP
-(TRUE_vCzeAuX397S-7pqZvYp9f)
+(TRUE__NvZaErqiJGUc-LpNXXN1)
 D=-1
 @SP
 A=M
 M=D
-@NEXT_LZNSmtzy4S8C9IUoEkyPB
+@NEXT_4ud-C-rpW-jJ-5WouN7_V
 0;JMP
-(FALSE_boV9Dlj5L9u0vHWRX08TR)
+(FALSE_DQNlE2CewWshBh2ajTljt)
 D=0
 @SP
 A=M
 M=D
-(NEXT_LZNSmtzy4S8C9IUoEkyPB)
+(NEXT_4ud-C-rpW-jJ-5WouN7_V)
 @SP
 M=M+1
+// ["push" "constant" "16"]
 @16
 D=A
 @SP
@@ -91,6 +98,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["push" "constant" "17"]
 @17
 D=A
 @SP
@@ -98,6 +106,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["eq"]
 @SP
 M=M-1
 @SP
@@ -108,25 +117,26 @@ M=M-1
 @SP
 A=M
 D=M-D
-@TRUE_1SksfmmtteJySZ4wK9frW
+@TRUE_a7sKiaCwwnw17cxpGqw4q
 D;JEQ
-@FALSE_amWVd7_wOVa1TPqED0VTc
+@FALSE_i9ZAsdXeOCrP8Bmcg_lNe
 0;JMP
-(TRUE_1SksfmmtteJySZ4wK9frW)
+(TRUE_a7sKiaCwwnw17cxpGqw4q)
 D=-1
 @SP
 A=M
 M=D
-@NEXT_PZChqZ3jmWdvef59ML11n
+@NEXT_WBzq-_detHUjTSSi2Sa-P
 0;JMP
-(FALSE_amWVd7_wOVa1TPqED0VTc)
+(FALSE_i9ZAsdXeOCrP8Bmcg_lNe)
 D=0
 @SP
 A=M
 M=D
-(NEXT_PZChqZ3jmWdvef59ML11n)
+(NEXT_WBzq-_detHUjTSSi2Sa-P)
 @SP
 M=M+1
+// ["push" "constant" "892"]
 @892
 D=A
 @SP
@@ -134,6 +144,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["push" "constant" "891"]
 @891
 D=A
 @SP
@@ -141,6 +152,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["lt"]
 @SP
 M=M-1
 @SP
@@ -151,25 +163,26 @@ M=M-1
 @SP
 A=M
 D=M-D
-@TRUE_wrz3XZM0Bo1vqFHiP6foo
+@TRUE_9O_9Ec6Agdr3iPh4sYZDG
 D;JLT
-@FALSE_Jk1tJXKESu8QeaIcD2QFJ
+@FALSE_7O6tUnYDLTNmT2mpC8owW
 0;JMP
-(TRUE_wrz3XZM0Bo1vqFHiP6foo)
+(TRUE_9O_9Ec6Agdr3iPh4sYZDG)
 D=-1
 @SP
 A=M
 M=D
-@NEXT_3_Vb9vB_etOCv6_MAIx_B
+@NEXT_z-zH-ViivpNBy6smnlfY5
 0;JMP
-(FALSE_Jk1tJXKESu8QeaIcD2QFJ)
+(FALSE_7O6tUnYDLTNmT2mpC8owW)
 D=0
 @SP
 A=M
 M=D
-(NEXT_3_Vb9vB_etOCv6_MAIx_B)
+(NEXT_z-zH-ViivpNBy6smnlfY5)
 @SP
 M=M+1
+// ["push" "constant" "891"]
 @891
 D=A
 @SP
@@ -177,6 +190,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["push" "constant" "892"]
 @892
 D=A
 @SP
@@ -184,6 +198,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["lt"]
 @SP
 M=M-1
 @SP
@@ -194,25 +209,26 @@ M=M-1
 @SP
 A=M
 D=M-D
-@TRUE_7xNmt6TESBjJjuVm3qHoj
+@TRUE_efX-IJ0XqLW3BgxLs0sLb
 D;JLT
-@FALSE_d-kV56wDzTyc8SsHHmtrc
+@FALSE_oLpM4eCNmgJ2E1sSw9EuL
 0;JMP
-(TRUE_7xNmt6TESBjJjuVm3qHoj)
+(TRUE_efX-IJ0XqLW3BgxLs0sLb)
 D=-1
 @SP
 A=M
 M=D
-@NEXT_NrieXdWgmApidxLKDKMjN
+@NEXT_tZjd8p2EN-Sun85tfXdil
 0;JMP
-(FALSE_d-kV56wDzTyc8SsHHmtrc)
+(FALSE_oLpM4eCNmgJ2E1sSw9EuL)
 D=0
 @SP
 A=M
 M=D
-(NEXT_NrieXdWgmApidxLKDKMjN)
+(NEXT_tZjd8p2EN-Sun85tfXdil)
 @SP
 M=M+1
+// ["push" "constant" "891"]
 @891
 D=A
 @SP
@@ -220,6 +236,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["push" "constant" "891"]
 @891
 D=A
 @SP
@@ -227,6 +244,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["lt"]
 @SP
 M=M-1
 @SP
@@ -237,25 +255,26 @@ M=M-1
 @SP
 A=M
 D=M-D
-@TRUE_z6Eu4AkBq8e5vW000JLUr
+@TRUE_RJz0AfoUxym3Wnpwi61s9
 D;JLT
-@FALSE_reNm4EwBu4ArIln_3zntQ
+@FALSE_XXPAaLegVucrk60OmgTGp
 0;JMP
-(TRUE_z6Eu4AkBq8e5vW000JLUr)
+(TRUE_RJz0AfoUxym3Wnpwi61s9)
 D=-1
 @SP
 A=M
 M=D
-@NEXT_s34bCFX6iVaMiAaXhnufB
+@NEXT_rgxYGlcRXFt4YoS0EUj09
 0;JMP
-(FALSE_reNm4EwBu4ArIln_3zntQ)
+(FALSE_XXPAaLegVucrk60OmgTGp)
 D=0
 @SP
 A=M
 M=D
-(NEXT_s34bCFX6iVaMiAaXhnufB)
+(NEXT_rgxYGlcRXFt4YoS0EUj09)
 @SP
 M=M+1
+// ["push" "constant" "32767"]
 @32767
 D=A
 @SP
@@ -263,6 +282,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["push" "constant" "32766"]
 @32766
 D=A
 @SP
@@ -270,6 +290,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["gt"]
 @SP
 M=M-1
 @SP
@@ -280,25 +301,26 @@ M=M-1
 @SP
 A=M
 D=M-D
-@TRUE_575-ofFJ1aXFfHMA4WfJG
+@TRUE_wBmihjS94O2XNGPk7Tipw
 D;JGT
-@FALSE_agp-jgtWaKDpYIVEfbjRl
+@FALSE_x74gJvO7vWw45hUcOuRWk
 0;JMP
-(TRUE_575-ofFJ1aXFfHMA4WfJG)
+(TRUE_wBmihjS94O2XNGPk7Tipw)
 D=-1
 @SP
 A=M
 M=D
-@NEXT_XainXcGLU8bL9YOsGjWTH
+@NEXT_dF53sJyztEQT8Mi_OukGQ
 0;JMP
-(FALSE_agp-jgtWaKDpYIVEfbjRl)
+(FALSE_x74gJvO7vWw45hUcOuRWk)
 D=0
 @SP
 A=M
 M=D
-(NEXT_XainXcGLU8bL9YOsGjWTH)
+(NEXT_dF53sJyztEQT8Mi_OukGQ)
 @SP
 M=M+1
+// ["push" "constant" "32766"]
 @32766
 D=A
 @SP
@@ -306,6 +328,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["push" "constant" "32767"]
 @32767
 D=A
 @SP
@@ -313,6 +336,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["gt"]
 @SP
 M=M-1
 @SP
@@ -323,25 +347,26 @@ M=M-1
 @SP
 A=M
 D=M-D
-@TRUE_TrqHL0E0ODOYjLXH6WPUN
+@TRUE_dNI32FzYfLWJtcYeY9qF_
 D;JGT
-@FALSE_me6hej7rB2LhB9T2QutxD
+@FALSE_e1OJmjH_PTSzW96Hly3hI
 0;JMP
-(TRUE_TrqHL0E0ODOYjLXH6WPUN)
+(TRUE_dNI32FzYfLWJtcYeY9qF_)
 D=-1
 @SP
 A=M
 M=D
-@NEXT_xbVFVekJzg-8mxvvIPexY
+@NEXT_f9MnLDljSWS4SRATsKDW3
 0;JMP
-(FALSE_me6hej7rB2LhB9T2QutxD)
+(FALSE_e1OJmjH_PTSzW96Hly3hI)
 D=0
 @SP
 A=M
 M=D
-(NEXT_xbVFVekJzg-8mxvvIPexY)
+(NEXT_f9MnLDljSWS4SRATsKDW3)
 @SP
 M=M+1
+// ["push" "constant" "32766"]
 @32766
 D=A
 @SP
@@ -349,6 +374,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["push" "constant" "32766"]
 @32766
 D=A
 @SP
@@ -356,6 +382,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["gt"]
 @SP
 M=M-1
 @SP
@@ -366,25 +393,26 @@ M=M-1
 @SP
 A=M
 D=M-D
-@TRUE_UjI9KmyZDAfQQ4_U7kFyJ
+@TRUE_3bUvOokBkFE315KPdDra3
 D;JGT
-@FALSE_xeLQ41B9klTTeOSrQ2clb
+@FALSE_pkropW8YTRX3e39V9kRok
 0;JMP
-(TRUE_UjI9KmyZDAfQQ4_U7kFyJ)
+(TRUE_3bUvOokBkFE315KPdDra3)
 D=-1
 @SP
 A=M
 M=D
-@NEXT_ggWSf1MsHqOIxIWVErCZ-
+@NEXT_wEx6XE3_fdi70E-Nd-JPZ
 0;JMP
-(FALSE_xeLQ41B9klTTeOSrQ2clb)
+(FALSE_pkropW8YTRX3e39V9kRok)
 D=0
 @SP
 A=M
 M=D
-(NEXT_ggWSf1MsHqOIxIWVErCZ-)
+(NEXT_wEx6XE3_fdi70E-Nd-JPZ)
 @SP
 M=M+1
+// ["push" "constant" "57"]
 @57
 D=A
 @SP
@@ -392,6 +420,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["push" "constant" "31"]
 @31
 D=A
 @SP
@@ -399,6 +428,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["push" "constant" "53"]
 @53
 D=A
 @SP
@@ -406,6 +436,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["add"]
 @SP
 M=M-1
 @SP
@@ -419,6 +450,7 @@ D=M+D
 M=D
 @SP
 M=M+1
+// ["push" "constant" "112"]
 @112
 D=A
 @SP
@@ -426,6 +458,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["sub"]
 @SP
 M=M-1
 @SP
@@ -439,6 +472,7 @@ D=M-D
 M=D
 @SP
 M=M+1
+// ["neg"]
 @SP
 M=M-1
 @SP
@@ -448,6 +482,7 @@ D=-D
 M=D
 @SP
 M=M+1
+// ["and"]
 @SP
 M=M-1
 @SP
@@ -461,6 +496,7 @@ D=M&D
 M=D
 @SP
 M=M+1
+// ["push" "constant" "82"]
 @82
 D=A
 @SP
@@ -468,6 +504,7 @@ A=M
 M=D
 @SP
 M=M+1
+// ["or"]
 @SP
 M=M-1
 @SP
@@ -481,6 +518,7 @@ D=M|D
 M=D
 @SP
 M=M+1
+// ["not"]
 @SP
 M=M-1
 @SP
@@ -490,6 +528,6 @@ D=!D
 M=D
 @SP
 M=M+1
-(END_LOOP_qi4U3yxNUCSEM5GjQTJRG)
-@END_LOOP_qi4U3yxNUCSEM5GjQTJRG
+(END_LOOP_YVLagjc9g5MZx4dtXcOQ7)
+@END_LOOP_YVLagjc9g5MZx4dtXcOQ7
 0;JMP
