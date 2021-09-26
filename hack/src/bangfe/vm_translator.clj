@@ -276,6 +276,18 @@
   [[(label address)]
    ["0;JMP"]])
 
+;; function SimpleFunction.test 2
+(defn function-cmd
+  [[_ name arg-count]]
+
+  ;; Create jump label
+  ;; Create 
+  ;; 
+  )
+
+(defn return-cmd
+  [line])
+
 (defn match
   [line]
   (case (first line)
@@ -298,7 +310,11 @@
     "label" (jump-label (last line))
 
     "if-goto" (goto-if-cmd line)
-    "goto" (goto-cmd line)))
+    "goto" (goto-cmd line)
+
+    "function" (function-cmd line)
+
+    "return" (return-cmd line)))
 
 (defn bootstrap
   "Bootstrap code to set up"
@@ -337,7 +353,6 @@
    (process "resources/samples/vm/StackTest.vm")
    "/Users/nevadasmith/Documents/projects/nand2tetris/projects/07/StackArithmetic/StackTest/StackTest.asm")
 
-
   (f/to-file
    (process "/Users/nevadasmith/Documents/projects/nand2tetris/projects/07/MemoryAccess/PointerTest/PointerTest.vm")
    "/Users/nevadasmith/Documents/projects/nand2tetris/projects/07/MemoryAccess/PointerTest/PointerTest.asm")
@@ -357,6 +372,12 @@
   (f/to-file
    (process "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/ProgramFlow/FibonacciSeries/FibonacciSeries.vm")
    "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/ProgramFlow/FibonacciSeries/FibonacciSeries.asm")
+
+  (f/to-file
+   (process "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/SimpleFunction/SimpleFunction.vm")
+   "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/SimpleFunction/SimpleFunction.asm")
+
+
 
   (f/load-lines "resources/samples/vm/StackTest.vm")
   (process "resources/samples/vm/StackTest.vm")
