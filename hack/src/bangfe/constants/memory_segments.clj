@@ -8,7 +8,10 @@
                        :pointer 3
                        :this 3
                        :that 4
-                       :temp 5}})
+                       :temp 5}
+   :segments {:general-purpose 13
+              :static 16
+              :stack 256}})
 
 
 (defn offset-for

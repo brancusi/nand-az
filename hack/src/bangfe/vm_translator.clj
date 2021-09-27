@@ -9,6 +9,8 @@
    [bangfe.constants.memory-segments :as memory-segments :refer [offset-for]])
   (:gen-class))
 
+
+
 (defn inc-stack-pointer
   "Increment the stack pointer"
   []
@@ -276,14 +278,35 @@
   [[(label address)]
    ["0;JMP"]])
 
+(defn call-cmd
+  [line]
+  [])
+
 ;; function SimpleFunction.test 2
 (defn function-cmd
   [[_ name arg-count]]
+  ;; Create the jump label
+  ;; Set arg pointer to two up
+  ;; Stash mem segments
+  ;; Inc return address count
 
-  ;; Create jump label
-  ;; Create 
+  ;; Update pointers to new location
+  ;; Update SP pointer to top of stack
+  ;; Init local vars
+  ;; 
+
+  [(jump-label name)
+
+   ["@R13"]
+   [""]
+
+  ;;  
+   ]
+
   ;; 
   )
+
+(function-cmd ["function" "Main.simple" 2])
 
 (defn return-cmd
   [line])
@@ -311,6 +334,8 @@
 
     "if-goto" (goto-if-cmd line)
     "goto" (goto-cmd line)
+
+    "call" (call-cmd line)
 
     "function" (function-cmd line)
 
