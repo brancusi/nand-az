@@ -157,6 +157,6 @@ A=M
 M=D
 @SP
 M=M+1
-(END_LOOP_BqQARzdUIpXVyByALxOaI)
-@END_LOOP_BqQARzdUIpXVyByALxOaI
+(END_LOOP_0dusCwaSoq7J6bBpcsWpd)
+@END_LOOP_0dusCwaSoq7J6bBpcsWpd
 0;JMP

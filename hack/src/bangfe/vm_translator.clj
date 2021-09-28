@@ -9,7 +9,14 @@
    [bangfe.constants.memory-segments :as memory-segments :refer [offset-for]])
   (:gen-class))
 
+(declare process process-lines process-line)
 
+(defn load-lines
+  [path]
+  (let [lines (->> (f/load-lines path)
+                   s/strip-whitespace
+                   (map #(clojure.string/split % #" ")))]
+    (map (fn [l] (with-meta l {:uuid (nano-id)})) lines)))
 
 (defn inc-stack-pointer
   "Increment the stack pointer"
@@ -279,40 +286,226 @@
    ["0;JMP"]])
 
 (defn call-cmd
-  [line]
+  [lines line]
   [])
+
+;; TODO: Make this about pairs [c,c,c,r,r,r]
+;; Loop through and build neighbors and this will be the call order
+;; [c,c,c,r,r,r] -> [c,r] then remaining [c,c,r,r] -> [c,r] etc.
+(defn return-symbol
+  [lines line]
+  (let []
+
+    {:fmt (format "(%s$ret.%d)" name call-stack-length)
+     :data {:calls-count calls-count
+            :return-count return-count
+            :call-stack-length call-stack-length}}))
+
+(def yo (load-lines "/Users/nevadasmith/Documents/projects/nand2tetris/hack/resources/samples/vm/call-return.asm"))
+
+(reduce (fn [acc cur]
+          acc)
+        []
+        [["call" 1]
+         ["call" 2]
+         ["call" 3]
+         ["call" 4]
+
+         ["return" 4]
+         ["return" 3]
+         ["return" 2]
+         ["return" 1]
+
+         ["call" 1]
+         ["return" 1]
+
+         ["call" 1]
+         ["return" 1]])
+
+(return-symbol yo (nth yo 15))
+;; => {:fmt "(Main.fibonacci-c$ret.3)", :data {:calls-count 3, :return-count 0, :call-stack-length 3}}
+
+;; => {:data {:calls-count 3, :return-count 0, :call-stack-length 3}, :fmt "(Main.fibonacci-c$ret.3)"}
+
+;; => {:data {:calls-count 2, :return-count -1, :call-stack-length 3}, :fmt "(Main.fibonacci-c$ret.3)"}
+
+;; => "(Main.fibonacci-c$ret.3)"
+
+(return-symbol yo (nth yo 17))
+;; => {:fmt "(Main.fibonacci-b$ret.2)", :data {:calls-count 3, :return-count 1, :call-stack-length 2}}
+
+;; => "(Main.fibonacci-b$ret.2)"
+
+(return-symbol yo (nth yo 22))
+;; => {:fmt "(Main.fibonacci-b$ret.2)", :data {:calls-count 4, :return-count 2, :call-stack-length 2}}
+
+;; => "(Main.fibonacci-b$ret.2)"
+
+(return-symbol yo (nth yo 29))
+;; => "(Main.fibonacci-b$ret.2)"
+
+(return-symbol yo (nth yo 30))
+;; => "(Main.fibonacci-a$ret.1)"
+
+
+
+
+(return-symbol yo (last yo))
+
+(.indexOf (nth yo 8))
+(take-while (fn [l] (not (= (meta l) (meta (nth yo 8))))) yo)
+;; => (["function" "Main.fibonacci" "0"]
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "2"]
+;;     ["lt"]
+;;     ["if-goto" "IF_TRUE"]
+;;     ["goto" "IF_FALSE"]
+;;     ["label" "IF_TRUE"]
+;;     ["push" "argument" "0"])
+
+;; => (["function" "Main.fibonacci" "0"]
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "2"]
+;;     ["lt"]
+;;     ["if-goto" "IF_TRUE"]
+;;     ["goto" "IF_FALSE"]
+;;     ["label" "IF_TRUE"]
+;;     ["push" "argument" "0"]
+;;     ["return"]
+;;     ["label" "IF_FALSE"]
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "2"]
+;;     ["sub"]
+;;     ["call" "Main.fibonacci" "1"]
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "1"]
+;;     ["sub"]
+;;     ["call" "Main.fibonacci" "1"]
+;;     ["add"])
+
+;; => (["function" "Main.fibonacci" "0"]
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "2"]
+;;     ["lt"]
+;;     ["if-goto" "IF_TRUE"]
+;;     ["goto" "IF_FALSE"]
+;;     ["label" "IF_TRUE"]
+;;     ["push" "argument" "0"])
+
+;; => (["function" "Main.fibonacci" "0"]
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "2"]
+;;     ["lt"]
+;;     ["if-goto" "IF_TRUE"]
+;;     ["goto" "IF_FALSE"]
+;;     ["label" "IF_TRUE"]
+;;     ["push" "argument" "0"])
+
+;; => ["function" "Main.fibonacci" "0"]
+
+;; => (["function" "Main.fibonacci" "0"]
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "2"]
+;;     ["lt"]
+;;     ["if-goto" "IF_TRUE"]
+;;     ["goto" "IF_FALSE"]
+;;     ["label" "IF_TRUE"]
+;;     ["push" "argument" "0"]
+;;     ["return"]
+;;     ["label" "IF_FALSE"]
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "2"]
+;;     ["sub"]
+;;     ["call" "Main.fibonacci" "1"]
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "1"]
+;;     ["sub"]
+;;     ["call" "Main.fibonacci" "1"]
+;;     ["add"]
+;;     ["return"])
+
+;; => (["function" "Main.fibonacci" "0"]
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "2"]
+;;     ["lt"]
+;;     ["if-goto" "IF_TRUE"]
+;;     ["goto" "IF_FALSE"]
+;;     ["label" "IF_TRUE"]
+;;     ["push" "argument" "0"]
+;;     ["return"]
+;;     ["label" "IF_FALSE"]
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "2"]
+;;     ["sub"]
+;;     ["call" "Main.fibonacci" "1"]
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "1"]
+;;     ["sub"]
+;;     ["call" "Main.fibonacci" "1"]
+;;     ["add"]
+;;     ["return"])
+
+
+(let [lines (load-lines "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/FibonacciElement/Main.vm")
+      line (first lines)]
+  (return-symbol lines line))
+
+(defn get-fn-name
+  [lines line]
+  (let [fns (filter (fn [[type]] (= "function" type)) lines)
+        position (.indexOf fns line)
+        [_ name _] line]
+
+    (format "%s.%d" name position)))
+
+(defn func-label
+  "Create a function label (Funcname.i) where i increments for each func declaration"
+  [lines line]
+  (let [fn-name (get-fn-name lines line)]
+    (format "(%s)" fn-name)))
+
+(defn func-symbol
+  "Create a function symbol @Funcname.i where i increments for each func declaration"
+  [lines line]
+  (let [fn-name (get-fn-name lines line)]
+    (format "@%s" fn-name)))
+
+(let [lines (load-lines "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/FibonacciElement/Main.vm")
+      line (first lines)]
+  (func-symbol lines line))
+
+(filter (fn [[type]] (= "function" type))
+        (load-lines "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/FibonacciElement/Main.vm"))
 
 ;; function SimpleFunction.test 2
 (defn function-cmd
-  [[_ name arg-count]]
+  [lines line]
   ;; Create the jump label
-  ;; Set arg pointer to two up
-  ;; Stash mem segments
-  ;; Inc return address count
+  ;; Create return address
+  ;; Store mem segs
+  ;; Write 0's to LCL addresses
+  ;; Set ARGS
+  ;; Set SP
+  ;; Set LCL
 
-  ;; Update pointers to new location
-  ;; Update SP pointer to top of stack
-  ;; Init local vars
-  ;; 
 
-  [(jump-label name)
+  [(func-label lines line)
 
-   ["@R13"]
-   [""]
 
   ;;  
-   ]
+   ])
 
-  ;; 
-  )
 
-(function-cmd ["function" "Main.simple" 2])
+
+(process "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/FibonacciElement/Main.vm")
 
 (defn return-cmd
-  [line])
+  [lines line])
+
+
 
 (defn match
-  [line]
+  [lines line]
   (case (first line)
     "push"  (push-cmd line)
     "pop"   (pop-cmd line)
@@ -335,23 +528,36 @@
     "if-goto" (goto-if-cmd line)
     "goto" (goto-cmd line)
 
-    "call" (call-cmd line)
+    "call" (call-cmd lines line)
 
-    "function" (function-cmd line)
+    "function" (function-cmd lines line)
 
-    "return" (return-cmd line)))
+    "return" (return-cmd lines line)))
 
 (defn bootstrap
   "Bootstrap code to set up"
   []
   [])
 
+(defn add-comment
+  [line]
+  (str "// " line))
+
+(defn process-line
+  "Process a single line of VM code"
+  [lines line]
+  [(add-comment line)
+   (match lines line)])
+
+(defn process-lines
+  "Process all lines"
+  [lines]
+  (map #(process-line lines %) lines))
+
 (defn process
   [path]
-  (-> (->> (f/load-lines path)
-           s/strip-whitespace
-           (map #(clojure.string/split % #" "))
-           (map (fn [line] [(str "// " line) (match line)])))
+  (-> (load-lines path)
+      (process-lines)
       (conj (bootstrap))
       vec
       (conj (end-loop))
