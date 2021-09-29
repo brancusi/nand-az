@@ -15,6 +15,7 @@
 
 
 (defn offset-for
+  "Offset for the pointer. Returns an int"
   [key]
   (let [key (if (keyword? key)
               key

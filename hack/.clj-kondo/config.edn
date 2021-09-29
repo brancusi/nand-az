@@ -1,0 +1,3 @@
+{:linters {:for-indexed/missing-index {:level :error}}
+ :hooks
+ {:analyze-call {bangfe.utils.utils/for-indexed hooks.for-indexed/for-indexed}}}

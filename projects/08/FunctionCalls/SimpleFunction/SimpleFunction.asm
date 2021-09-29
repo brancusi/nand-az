@@ -102,6 +102,6 @@ M=D
 M=M+1
 // ["return"]
 
-(END_LOOP_Oh3ZGBSDGEXgAiiTn-fqy)
-@END_LOOP_Oh3ZGBSDGEXgAiiTn-fqy
+(END_LOOP_n-kOnZs6IklBqugt3jLWx)
+@END_LOOP_n-kOnZs6IklBqugt3jLWx
 0;JMP

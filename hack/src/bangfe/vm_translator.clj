@@ -3,6 +3,7 @@
    [clojure.string]
    [nano-id.core :refer [nano-id]]
    [bangfe.utils.number]
+   [bangfe.utils.utils :refer [for-indexed]]
    [bangfe.utils.file :as f]
    [bangfe.utils.string :as s]
    [clojure.tools.cli :refer [parse-opts]]
@@ -13,10 +14,12 @@
 
 (defn load-lines
   [path]
-  (let [lines (->> (f/load-lines path)
+  (let [lines (->> (f/load-lines  path)
                    s/strip-whitespace
                    (map #(clojure.string/split % #" ")))]
-    (map (fn [l] (with-meta l {:uuid (nano-id)})) lines)))
+    (vec (for-indexed  [line idx lines]
+                       (with-meta line {:line-number idx
+                                        :uuid (nano-id)})))))
 
 (defn inc-stack-pointer
   "Increment the stack pointer"
@@ -242,6 +245,74 @@
      [formatted-address]
      ["M=D"]]))
 
+(defn push-mem-segment-address-to-stack
+  "Push the memory segment pointer address to the stack head
+   Will increment the stack pointer"
+  [segment]
+  (let [pointer-address (memory-segments/offset-for segment)]
+    [[(str "@" pointer-address)
+      ["D=M"]
+      (d-to->stack-head)
+      (inc-stack-pointer)]]))
+
+(defn push-mem-segments-to-stack
+  "Push lcl, args, this, that, to stack head"
+  []
+  [(push-mem-segment-address-to-stack :local)
+   (push-mem-segment-address-to-stack :argument)
+   (push-mem-segment-address-to-stack :this)
+   (push-mem-segment-address-to-stack :that)])
+
+(defn- build-call-return-pairs
+  "Creates call return pairs"
+  [lines]
+  (let [results (reduce
+                 (fn
+                   [acc cur]
+                   (case (first cur)
+                     "call" (update-in acc [:call-stack] conj cur)
+                     "return" (-> acc
+                                  (update-in [:call-return-pair] conj {:call (peek (:call-stack acc))
+                                                                       :return cur})
+                                  (assoc-in [:call-stack] (pop (:call-stack acc))))
+                     acc))
+
+                 {:call-return-pair []
+                  :call-stack []} lines)]
+
+    (:call-return-pair results)))
+
+(defn matching-call-or-return?
+  [pair line]
+  (let [{:keys [call return]} pair]
+    (or (= (meta return) (meta line))
+        (= (meta call) (meta line)))))
+
+(defn symbols-for-call-return
+  "Create symbols for a given fn call
+   
+   Example: (matching-call-or-return? lines line)
+
+   Returns a map with keys :variable and :label
+
+   {:variable '@Main.fibonacci-c.0', :label '(Main.fibonacci-c.0)'}
+
+   "
+  [lines line]
+  (let [pairs (build-call-return-pairs lines)
+        match (first (filter #(matching-call-or-return? % line) pairs))
+        match-index (.indexOf pairs match)
+        call-name (-> match :call (second))]
+    {:variable [(format "@%s$ret.%d" call-name match-index)]
+     :label [(format "(%s$ret.%d)" call-name match-index)]}))
+
+(defn stash-return-address
+  [return-variable]
+  [return-variable
+   ["D=A"]
+   ["@returnAddress"]
+   ["M=D"]])
+
 (defn push-cmd
   [[_ seg address]]
   (case seg
@@ -285,223 +356,78 @@
   [[(label address)]
    ["0;JMP"]])
 
+(defn set-memory-segment
+  "Update the location of the memory segment pointer based on an offset from the stack head
+   Example: (set-memory-segment :local 0) 
+
+   This will set LCL to the current SP"
+  [segment offset-from-sp]
+  (let [address (memory-segments/offset-for segment)
+        is-offset-neg? (neg-int? offset-from-sp)
+        normalized-offset (if is-offset-neg?
+                            (- offset-from-sp)
+                            offset-from-sp)]
+    [["@SP"]
+     ["D=A"]
+     [(str "@" normalized-offset)]
+     (if is-offset-neg? ["D=D-A"] ["D=D+A"])
+     [(str "@" address)]
+     ["M=D"]]))
+
+(defn reset-mem-segments-to-new-caller
+  "Reset the memory segment pointer to the new caller stack"
+  [arg-count]
+  (let [sanatized-arg-count (bangfe.utils.number/sanatize-number arg-count)]
+    [(set-memory-segment :local 0)
+     (set-memory-segment :this 2)
+     (set-memory-segment :that 3)
+
+    ;;  (SP - 5 - arg count) is where we need to set args
+     (set-memory-segment :argument (- (+ 5 sanatized-arg-count)))]))
+
+(defn write-zeros-to-mem-segment
+  [segment offset total]
+  (let [address (memory-segments/offset-for segment)
+        offset (bangfe.utils.number/sanatize-number offset)
+        total (bangfe.utils.number/sanatize-number total)]
+    [[(str "@" address)]
+     ["D=M"]
+     [(str "@" offset)]
+     ["D=D+A"]
+     [(str "@" address)]
+     (mapv (fn [i]
+             [["M=0"]
+              ["A=A+1"]])
+           (range total))]))
+
+(write-zeros-to-mem-segment :local 0 "2")
+
+(defn func-symbols
+  "Create a function label (Funcname.i) for func declaration"
+  [[_ name]]
+  {:label [(format "(%s)" name)]
+   :variable [(format "@%s" name)]})
+
 (defn call-cmd
   [lines line]
-  [])
+  (let [[_ _ arg-count] line
+        return-symbols (symbols-for-call-return lines line)]
+    [(stash-return-address (:variable return-symbols))
+     (push-mem-segments-to-stack)
+     (reset-mem-segments-to-new-caller arg-count)
+     (write-zeros-to-mem-segment :local 0 arg-count)
 
-;; TODO: Make this about pairs [c,c,c,r,r,r]
-;; Loop through and build neighbors and this will be the call order
-;; [c,c,c,r,r,r] -> [c,r] then remaining [c,c,r,r] -> [c,r] etc.
-(defn return-symbol
-  [lines line]
-  (let []
-
-    {:fmt (format "(%s$ret.%d)" name call-stack-length)
-     :data {:calls-count calls-count
-            :return-count return-count
-            :call-stack-length call-stack-length}}))
-
-(def yo (load-lines "/Users/nevadasmith/Documents/projects/nand2tetris/hack/resources/samples/vm/call-return.asm"))
-
-(reduce (fn [acc cur]
-          acc)
-        []
-        [["call" 1]
-         ["call" 2]
-         ["call" 3]
-         ["call" 4]
-
-         ["return" 4]
-         ["return" 3]
-         ["return" 2]
-         ["return" 1]
-
-         ["call" 1]
-         ["return" 1]
-
-         ["call" 1]
-         ["return" 1]])
-
-(return-symbol yo (nth yo 15))
-;; => {:fmt "(Main.fibonacci-c$ret.3)", :data {:calls-count 3, :return-count 0, :call-stack-length 3}}
-
-;; => {:data {:calls-count 3, :return-count 0, :call-stack-length 3}, :fmt "(Main.fibonacci-c$ret.3)"}
-
-;; => {:data {:calls-count 2, :return-count -1, :call-stack-length 3}, :fmt "(Main.fibonacci-c$ret.3)"}
-
-;; => "(Main.fibonacci-c$ret.3)"
-
-(return-symbol yo (nth yo 17))
-;; => {:fmt "(Main.fibonacci-b$ret.2)", :data {:calls-count 3, :return-count 1, :call-stack-length 2}}
-
-;; => "(Main.fibonacci-b$ret.2)"
-
-(return-symbol yo (nth yo 22))
-;; => {:fmt "(Main.fibonacci-b$ret.2)", :data {:calls-count 4, :return-count 2, :call-stack-length 2}}
-
-;; => "(Main.fibonacci-b$ret.2)"
-
-(return-symbol yo (nth yo 29))
-;; => "(Main.fibonacci-b$ret.2)"
-
-(return-symbol yo (nth yo 30))
-;; => "(Main.fibonacci-a$ret.1)"
+     ;;  Now go to fn
+     (:variable (func-symbols line))
+     ["0:JMP"]
+     (:label return-symbols)]))
 
 
-
-
-(return-symbol yo (last yo))
-
-(.indexOf (nth yo 8))
-(take-while (fn [l] (not (= (meta l) (meta (nth yo 8))))) yo)
-;; => (["function" "Main.fibonacci" "0"]
-;;     ["push" "argument" "0"]
-;;     ["push" "constant" "2"]
-;;     ["lt"]
-;;     ["if-goto" "IF_TRUE"]
-;;     ["goto" "IF_FALSE"]
-;;     ["label" "IF_TRUE"]
-;;     ["push" "argument" "0"])
-
-;; => (["function" "Main.fibonacci" "0"]
-;;     ["push" "argument" "0"]
-;;     ["push" "constant" "2"]
-;;     ["lt"]
-;;     ["if-goto" "IF_TRUE"]
-;;     ["goto" "IF_FALSE"]
-;;     ["label" "IF_TRUE"]
-;;     ["push" "argument" "0"]
-;;     ["return"]
-;;     ["label" "IF_FALSE"]
-;;     ["push" "argument" "0"]
-;;     ["push" "constant" "2"]
-;;     ["sub"]
-;;     ["call" "Main.fibonacci" "1"]
-;;     ["push" "argument" "0"]
-;;     ["push" "constant" "1"]
-;;     ["sub"]
-;;     ["call" "Main.fibonacci" "1"]
-;;     ["add"])
-
-;; => (["function" "Main.fibonacci" "0"]
-;;     ["push" "argument" "0"]
-;;     ["push" "constant" "2"]
-;;     ["lt"]
-;;     ["if-goto" "IF_TRUE"]
-;;     ["goto" "IF_FALSE"]
-;;     ["label" "IF_TRUE"]
-;;     ["push" "argument" "0"])
-
-;; => (["function" "Main.fibonacci" "0"]
-;;     ["push" "argument" "0"]
-;;     ["push" "constant" "2"]
-;;     ["lt"]
-;;     ["if-goto" "IF_TRUE"]
-;;     ["goto" "IF_FALSE"]
-;;     ["label" "IF_TRUE"]
-;;     ["push" "argument" "0"])
-
-;; => ["function" "Main.fibonacci" "0"]
-
-;; => (["function" "Main.fibonacci" "0"]
-;;     ["push" "argument" "0"]
-;;     ["push" "constant" "2"]
-;;     ["lt"]
-;;     ["if-goto" "IF_TRUE"]
-;;     ["goto" "IF_FALSE"]
-;;     ["label" "IF_TRUE"]
-;;     ["push" "argument" "0"]
-;;     ["return"]
-;;     ["label" "IF_FALSE"]
-;;     ["push" "argument" "0"]
-;;     ["push" "constant" "2"]
-;;     ["sub"]
-;;     ["call" "Main.fibonacci" "1"]
-;;     ["push" "argument" "0"]
-;;     ["push" "constant" "1"]
-;;     ["sub"]
-;;     ["call" "Main.fibonacci" "1"]
-;;     ["add"]
-;;     ["return"])
-
-;; => (["function" "Main.fibonacci" "0"]
-;;     ["push" "argument" "0"]
-;;     ["push" "constant" "2"]
-;;     ["lt"]
-;;     ["if-goto" "IF_TRUE"]
-;;     ["goto" "IF_FALSE"]
-;;     ["label" "IF_TRUE"]
-;;     ["push" "argument" "0"]
-;;     ["return"]
-;;     ["label" "IF_FALSE"]
-;;     ["push" "argument" "0"]
-;;     ["push" "constant" "2"]
-;;     ["sub"]
-;;     ["call" "Main.fibonacci" "1"]
-;;     ["push" "argument" "0"]
-;;     ["push" "constant" "1"]
-;;     ["sub"]
-;;     ["call" "Main.fibonacci" "1"]
-;;     ["add"]
-;;     ["return"])
-
-
-(let [lines (load-lines "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/FibonacciElement/Main.vm")
-      line (first lines)]
-  (return-symbol lines line))
-
-(defn get-fn-name
-  [lines line]
-  (let [fns (filter (fn [[type]] (= "function" type)) lines)
-        position (.indexOf fns line)
-        [_ name _] line]
-
-    (format "%s.%d" name position)))
-
-(defn func-label
-  "Create a function label (Funcname.i) where i increments for each func declaration"
-  [lines line]
-  (let [fn-name (get-fn-name lines line)]
-    (format "(%s)" fn-name)))
-
-(defn func-symbol
-  "Create a function symbol @Funcname.i where i increments for each func declaration"
-  [lines line]
-  (let [fn-name (get-fn-name lines line)]
-    (format "@%s" fn-name)))
-
-(let [lines (load-lines "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/FibonacciElement/Main.vm")
-      line (first lines)]
-  (func-symbol lines line))
-
-(filter (fn [[type]] (= "function" type))
-        (load-lines "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/FibonacciElement/Main.vm"))
-
-;; function SimpleFunction.test 2
 (defn function-cmd
-  [lines line]
-  ;; Create the jump label
-  ;; Create return address
-  ;; Store mem segs
-  ;; Write 0's to LCL addresses
-  ;; Set ARGS
-  ;; Set SP
-  ;; Set LCL
-
-
-  [(func-label lines line)
-
-
-  ;;  
-   ])
-
-
-
-(process "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/FibonacciElement/Main.vm")
+  [lines line])
 
 (defn return-cmd
   [lines line])
-
 
 
 (defn match
@@ -556,7 +482,7 @@
 
 (defn process
   [path]
-  (-> (load-lines path)
+  (-> (load-lines  path)
       (process-lines)
       (conj (bootstrap))
       vec
@@ -608,12 +534,16 @@
    (process "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/SimpleFunction/SimpleFunction.vm")
    "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/SimpleFunction/SimpleFunction.asm")
 
+  (f/to-file
+   (process "/Users/nevadasmith/Documents/projects/nand2tetris/hack/resources/samples/vm/Main.vm")
+   "/Users/nevadasmith/Documents/projects/nand2tetris/hack/resources/samples/vm/Main.asm")
 
 
-  (f/load-lines "resources/samples/vm/StackTest.vm")
+
+  (f/load-lines  "resources/samples/vm/StackTest.vm")
   (process "resources/samples/vm/StackTest.vm")
 
-  (-> (->> (f/load-lines "/Users/nevadasmith/Documents/projects/nand2tetris/projects/07/MemoryAccess/PointerTest/PointerTest.vm")
+  (-> (->> (f/load-lines  "/Users/nevadasmith/Documents/projects/nand2tetris/projects/07/MemoryAccess/PointerTest/PointerTest.vm")
            s/strip-whitespace
            (map #(clojure.string/split % #" "))
            (map match))
