@@ -29,8 +29,6 @@ M=M+1
 // ["pop" "that" "0"]
 @4
 D=M
-@0
-D=D+A
 @STASH
 M=D
 @SP
@@ -101,8 +99,6 @@ M=M+1
 // ["pop" "argument" "0"]
 @2
 D=M
-@0
-D=D+A
 @STASH
 M=D
 @SP
@@ -268,8 +264,6 @@ M=M+1
 // ["pop" "argument" "0"]
 @2
 D=M
-@0
-D=D+A
 @STASH
 M=D
 @SP
@@ -285,6 +279,6 @@ M=D
 0;JMP
 // ["label" "END_PROGRAM"]
 (END_PROGRAM)
-(END_LOOP_SwW1Gwu9s-2hkU-Gs8zmA)
-@END_LOOP_SwW1Gwu9s-2hkU-Gs8zmA
+(END_LOOP_H-vir1E_ZReeUnbJxFm4I)
+@END_LOOP_H-vir1E_ZReeUnbJxFm4I
 0;JMP

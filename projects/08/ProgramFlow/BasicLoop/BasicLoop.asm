@@ -9,8 +9,6 @@ M=M+1
 // ["pop" "local" "0"]
 @1
 D=M
-@0
-D=D+A
 @STASH
 M=D
 @SP
@@ -64,8 +62,6 @@ M=M+1
 // ["pop" "local" "0"]
 @1
 D=M
-@0
-D=D+A
 @STASH
 M=D
 @SP
@@ -113,8 +109,6 @@ M=M+1
 // ["pop" "argument" "0"]
 @2
 D=M
-@0
-D=D+A
 @STASH
 M=D
 @SP
@@ -157,6 +151,6 @@ A=M
 M=D
 @SP
 M=M+1
-(END_LOOP_0dusCwaSoq7J6bBpcsWpd)
-@END_LOOP_0dusCwaSoq7J6bBpcsWpd
+(END_LOOP_8or8S9Cw9_fIxCGl3Sw-Y)
+@END_LOOP_8or8S9Cw9_fIxCGl3Sw-Y
 0;JMP

@@ -4,4 +4,7 @@
   [n]
   (if (number? n)
     n
-    (Integer/parseInt n)))
+    (try
+      (Integer/parseInt n)
+      (catch Exception e))))
+

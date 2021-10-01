@@ -10,7 +10,12 @@
    [bangfe.constants.memory-segments :as memory-segments :refer [offset-for]])
   (:gen-class))
 
-(declare process process-lines process-line)
+(declare process process-lines process-line load-lines)
+
+(def sf-lines (load-lines "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/SimpleFunction/SimpleFunction.vm"))
+
+(defn load-dir
+  [])
 
 (defn load-lines
   [path]
@@ -51,6 +56,17 @@
   [(move-to-stack-head)
    ["A=A-1"]
    ["D=M"]])
+
+(defn pointer->var
+  "Set the value of a custom var to the specified pointer value
+   
+   Example (pointer->var :local 'endFrame')"
+  [mem-segment var-name]
+  (let [pointer-address (memory-segments/offset-for mem-segment)]
+    [(format "@%s" pointer-address)
+     ["D=M"]
+     [(format "@%s" var-name)]
+     ["M=D"]]))
 
 (defn stack-head-to->d
   "Set D to the current value of stack head
@@ -190,16 +206,26 @@
      [(format "@%d" target-address)]
      ["M=D"]]))
 
+(defn d-to->pointer
+  [seg-pointer]
+  (let [pointer-address (offset-for seg-pointer)]
+    [[(format "@%d" pointer-address)]
+     ["M=D"]]))
+
 (defn pop-to->dynamic
   "A generic pop function that looks up a virtual pointer and selects"
-  [seg address]
+  [seg & [address]]
   (let [pointer-offset (offset-for seg)
-        sub-address (bangfe.utils.number/sanatize-number address)]
+        sub-address (bangfe.utils.number/sanatize-number address)
+        needs-offset-adjustment? (and (not (nil? sub-address))
+                                      (not (zero? sub-address)))]
     [[(format "@%d" pointer-offset)]
      ["D=M"]
 
-     [(format "@%d" sub-address)]
-     ["D=D+A"]
+     (if needs-offset-adjustment?
+       [[(format "@%d" sub-address)]
+        ["D=D+A"]]
+       [])
 
      ["@STASH"]
      ["M=D"]
@@ -255,7 +281,7 @@
       (d-to->stack-head)
       (inc-stack-pointer)]]))
 
-(defn push-mem-segments-to-stack
+(defn save-caller-state
   "Push lcl, args, this, that, to stack head"
   []
   [(push-mem-segment-address-to-stack :local)
@@ -271,16 +297,57 @@
                    [acc cur]
                    (case (first cur)
                      "call" (update-in acc [:call-stack] conj cur)
-                     "return" (-> acc
-                                  (update-in [:call-return-pair] conj {:call (peek (:call-stack acc))
-                                                                       :return cur})
-                                  (assoc-in [:call-stack] (pop (:call-stack acc))))
+                     "return" (let [stack (:call-stack acc)]
+                                (if (empty? stack)
+                                  (-> acc
+                                      (update-in [:call-return-pair] conj {:call (peek (:call-stack acc))
+                                                                           :return cur}))
+                                  (-> acc
+                                      (update-in [:call-return-pair] conj {:call (peek (:call-stack acc))
+                                                                           :return cur})
+                                      (assoc-in [:call-stack] (pop (:call-stack acc))))))
                      acc))
 
                  {:call-return-pair []
                   :call-stack []} lines)]
 
     (:call-return-pair results)))
+
+(def fn-lines (load-lines "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/FibonacciElement"))
+fn-lines
+;; => [["function" "Main.fibonacci" "0"]
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "2"]
+;;     ["lt"]
+;;     ["if-goto" "IF_TRUE"]
+;;     ["goto" "IF_FALSE"]
+;;     ["label" "IF_TRUE"]
+;;     ["push" "argument" "0"]
+;;     ["return"] -                         return to Sys.init - call 1
+;;     ["label" "IF_FALSE"]
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "2"]
+;;     ["sub"]
+;;     ["call" "Main.fibonacci" "1"]        Call 2
+;;     ["push" "argument" "0"]
+;;     ["push" "constant" "1"]
+;;     ["sub"]
+;;     ["call" "Main.fibonacci" "1"]         Call 3
+;;     ["add"]
+;;     ["return"]                            return to call 3
+;;     ["function" "Sys.init" "0"]
+;;     ["push" "constant" "4"]
+;;     ["call" "Main.fibonacci" "1"]          Call 1
+;;     ["label" "WHILE"]
+;;     ["goto" "WHILE"]]
+
+
+
+(build-call-return-pairs fn-lines)
+;; => [{:call nil, :return ["return"]} {:call ["call" "Main.fibonacci" "1"], :return ["return"]}]
+
+;; => [{:call ["call" "Main.fibonacci" "1"], :return ["return"]}]
+
 
 (defn matching-call-or-return?
   [pair line]
@@ -306,12 +373,16 @@
     {:variable [(format "@%s$ret.%d" call-name match-index)]
      :label [(format "(%s$ret.%d)" call-name match-index)]}))
 
-(defn stash-return-address
+(defn push-return-address
+  "Push the return address to the stack head
+   Will increment stack pointer"
   [return-variable]
   [return-variable
    ["D=A"]
-   ["@returnAddress"]
-   ["M=D"]])
+   ["@SP"]
+   ["A=M"]
+   ["M=D"]
+   (inc-stack-pointer)])
 
 (defn push-cmd
   [[_ seg address]]
@@ -374,7 +445,7 @@
      [(str "@" address)]
      ["M=D"]]))
 
-(defn reset-mem-segments-to-new-caller
+(defn sandbox-mem-segments-to-new-caller
   "Reset the memory segment pointer to the new caller stack"
   [arg-count]
   (let [sanatized-arg-count (bangfe.utils.number/sanatize-number arg-count)]
@@ -382,7 +453,7 @@
      (set-memory-segment :this 2)
      (set-memory-segment :that 3)
 
-    ;;  (SP - 5 - arg count) is where we need to set args
+    ;;  ARG = (SP - 5 - arg count)
      (set-memory-segment :argument (- (+ 5 sanatized-arg-count)))]))
 
 (defn write-zeros-to-mem-segment
@@ -391,11 +462,12 @@
         offset (bangfe.utils.number/sanatize-number offset)
         total (bangfe.utils.number/sanatize-number total)]
     [[(str "@" address)]
+
      ["D=M"]
      [(str "@" offset)]
      ["D=D+A"]
-     [(str "@" address)]
-     (mapv (fn [i]
+     ["A=D"]
+     (mapv (fn [_]
              [["M=0"]
               ["A=A+1"]])
            (range total))]))
@@ -411,24 +483,104 @@
 (defn call-cmd
   [lines line]
   (let [[_ _ arg-count] line
-        return-symbols (symbols-for-call-return lines line)]
-    [(stash-return-address (:variable return-symbols))
-     (push-mem-segments-to-stack)
-     (reset-mem-segments-to-new-caller arg-count)
-     (write-zeros-to-mem-segment :local 0 arg-count)
+        uuid (nano-id)
+        return-label (format "(returnAdd.%s)" uuid)
+        return-variable (format "@returnAdd.%s" uuid)
+        #_#_return-symbols (symbols-for-call-return lines line)]
+    [(push-return-address return-variable)
+     (save-caller-state)
+     (sandbox-mem-segments-to-new-caller arg-count)
 
      ;;  Now go to fn
+     ["//Go to func"]
      (:variable (func-symbols line))
-     ["0:JMP"]
-     (:label return-symbols)]))
-
+     ["0;JMP"]
+     [return-label]]))
 
 (defn function-cmd
-  [lines line])
+  [_ line]
+  (let [[_ _ local-var-count] line]
+    [[(:label (func-symbols line))]
+     (write-zeros-to-mem-segment :local 0 local-var-count)]))
+
+(defn from-var-pointer-to->mem-segment-pointer
+  "Move the value of a var pointr with negative offset to a mem segment pointer
+   
+   This moves to the pointer value of var and offsets and then moves that value to the mem segment
+   Used in endFrame rehydration.
+
+   Example: (from-var-pointer-to->mem-segment-pointer 'endFrame' :this 1)"
+  [from to neg-offset]
+  [[(str "@" from)]
+   ["D=M"]
+   [(str "@" neg-offset)]
+   ["A=D-A"]
+   ["D=M"]
+
+   (d-to->pointer to)])
+
+(defn rehydrate-caller-state
+  "Hydrate the previous caller's state, sp, args, lcl, this, that"
+  []
+  [;; Set SP to ARG + 1
+   ["//Update to Args"]
+   ["@ARG"]
+   ["D=M"]
+   ["@SP"]
+   ["M=D+1"]
+
+   ["//rehydrate that"]
+   (from-var-pointer-to->mem-segment-pointer "endFrame" :that 1)
+
+   ["//rehydrate this"]
+   (from-var-pointer-to->mem-segment-pointer "endFrame" :this 2)
+
+   ["//rehydrate argument"]
+   (from-var-pointer-to->mem-segment-pointer "endFrame" :argument 3)
+
+   ["//rehydrate local"]
+   (from-var-pointer-to->mem-segment-pointer "endFrame" :local 4)])
 
 (defn return-cmd
-  [lines line])
+  [lines line]
+  [;;  Create end frame and stash in variable. Equals LCL
+   ["//Stash endframe"]
+   ["@LCL"]
+   ["D=M"]
+   ["@endFrame"]
+   ["M=D"]
 
+  ;;  Load endframe with offset
+   ["@endFrame"]
+   ["D=M"]
+   ["@5"]
+   ["D=D-A"]
+   ["A=D"]
+   ["D=M"]
+
+  ;;  Stash it in new var
+   ["//Stash retAddr"]
+   ["@retAddr"]
+   ["M=D"]
+
+  ;;  Pop the stack as the return value back to arguments which will be the new stack head - 1
+   ["//Pop the stack to args which will be new stack head"]
+   (dec-stack-pointer)
+   ["@SP"]
+   ["A=M"]
+   ["D=M"]
+   ["@ARG"]
+   ["A=M"]
+   ["M=D"]
+
+  ;;  Load in old state
+   (rehydrate-caller-state)
+
+  ;;  Return!
+   ["//Return"]
+   ["@retAddr"]
+   ["A=M"]
+   ["0;JMP"]])
 
 (defn match
   [lines line]
@@ -460,10 +612,18 @@
 
     "return" (return-cmd lines line)))
 
+(defn set-sp-pointer-address
+  [address]
+  [[(format "@%d" address)]
+   ["D=A"]
+   ["@SP"]
+   ["M=D"]])
+
 (defn bootstrap
   "Bootstrap code to set up"
   []
-  [])
+  [(set-sp-pointer-address 256)
+   (call-cmd [] ["call" "Sys.init" "0"])])
 
 (defn add-comment
   [line]
@@ -482,12 +642,16 @@
 
 (defn process
   [path]
-  (-> (load-lines  path)
-      (process-lines)
-      (conj (bootstrap))
-      vec
-      (conj (end-loop))
-      flatten))
+  (let [lines (load-lines  path)
+        bootstrap-code (if (f/is-directory? path)
+                         (bootstrap)
+                         [])
+        processed-lines (process-lines lines)
+        end-loop-code (end-loop)]
+    (flatten
+     [bootstrap-code
+      processed-lines
+      end-loop-code])))
 
 (defn -main [& args]
   (let [file (-> (parse-opts args [])
@@ -535,18 +699,13 @@
    "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/SimpleFunction/SimpleFunction.asm")
 
   (f/to-file
+   (process "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/FibonacciElement")
+   "/Users/nevadasmith/Documents/projects/nand2tetris/projects/08/FunctionCalls/FibonacciElement.asm")
+
+  (f/to-file
    (process "/Users/nevadasmith/Documents/projects/nand2tetris/hack/resources/samples/vm/Main.vm")
    "/Users/nevadasmith/Documents/projects/nand2tetris/hack/resources/samples/vm/Main.asm")
 
 
-
   (f/load-lines  "resources/samples/vm/StackTest.vm")
-  (process "resources/samples/vm/StackTest.vm")
-
-  (-> (->> (f/load-lines  "/Users/nevadasmith/Documents/projects/nand2tetris/projects/07/MemoryAccess/PointerTest/PointerTest.vm")
-           s/strip-whitespace
-           (map #(clojure.string/split % #" "))
-           (map match))
-      vec
-      (conj (end-loop))
-      flatten))
+  (process "resources/samples/vm/StackTest.vm"))
