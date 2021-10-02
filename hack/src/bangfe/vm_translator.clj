@@ -276,17 +276,21 @@
    Will increment the stack pointer"
   [segment]
   (let [pointer-address (memory-segments/offset-for segment)]
-    [[(str "@" pointer-address)
-      ["D=M"]
-      (d-to->stack-head)
-      (inc-stack-pointer)]]))
+    [[(str "@" pointer-address)]
+     ["D=M"]
+     (d-to->stack-head)
+     (inc-stack-pointer)]))
 
 (defn save-caller-state
   "Push lcl, args, this, that, to stack head"
   []
-  [(push-mem-segment-address-to-stack :local)
+  [["// Save local caller state"]
+   (push-mem-segment-address-to-stack :local)
+   ["// Save argument caller state"]
    (push-mem-segment-address-to-stack :argument)
+   ["// Save this caller state"]
    (push-mem-segment-address-to-stack :this)
+   ["// Save that caller state"]
    (push-mem-segment-address-to-stack :that)])
 
 (defn- build-call-return-pairs
@@ -377,7 +381,8 @@ fn-lines
   "Push the return address to the stack head
    Will increment stack pointer"
   [return-variable]
-  [return-variable
+  [["// Push return address to saved state"]
+   [return-variable]
    ["D=A"]
    ["@SP"]
    ["A=M"]
@@ -439,7 +444,7 @@ fn-lines
                             (- offset-from-sp)
                             offset-from-sp)]
     [["@SP"]
-     ["D=A"]
+     ["D=M"]
      [(str "@" normalized-offset)]
      (if is-offset-neg? ["D=D-A"] ["D=D+A"])
      [(str "@" address)]
@@ -449,30 +454,37 @@ fn-lines
   "Reset the memory segment pointer to the new caller stack"
   [arg-count]
   (let [sanatized-arg-count (bangfe.utils.number/sanatize-number arg-count)]
-    [(set-memory-segment :local 0)
-     (set-memory-segment :this 2)
-     (set-memory-segment :that 3)
+    [["// Create call sandbox for local"]
+     (set-memory-segment :local 0)
 
-    ;;  ARG = (SP - 5 - arg count)
-     (set-memory-segment :argument (- (+ 5 sanatized-arg-count)))]))
+     ["// Create call sandbox for argument"]
+     ;;  ARG = (SP - 5 - arg count)
+     (set-memory-segment :argument (- (+ 5 sanatized-arg-count)))
+
+     ["// Create call sandbox for this"]
+     (set-memory-segment :this 2)
+
+     ["// Create call sandbox for that"]
+     (set-memory-segment :that 3)]))
 
 (defn write-zeros-to-mem-segment
   [segment offset total]
   (let [address (memory-segments/offset-for segment)
         offset (bangfe.utils.number/sanatize-number offset)
         total (bangfe.utils.number/sanatize-number total)]
-    [[(str "@" address)]
+    (if (zero? total)
+      [["//O args skipping writing zeros"]]
+      [["//Write zeros"]
+       [(str "@" address)]
 
-     ["D=M"]
-     [(str "@" offset)]
-     ["D=D+A"]
-     ["A=D"]
-     (mapv (fn [_]
-             [["M=0"]
-              ["A=A+1"]])
-           (range total))]))
-
-(write-zeros-to-mem-segment :local 0 "2")
+       ["D=M"]
+       [(str "@" offset)]
+       ["D=D+A"]
+       ["A=D"]
+       (mapv (fn [_]
+               [["M=0"]
+                ["A=A+1"]])
+             (range total))])))
 
 (defn func-symbols
   "Create a function label (Funcname.i) for func declaration"
@@ -550,24 +562,23 @@ fn-lines
    ["@endFrame"]
    ["M=D"]
 
-  ;;  Load endframe with offset
+  ;;  Stash it in new var
+   ["//Stash the return address"]
    ["@endFrame"]
    ["D=M"]
+   ["//Offset is *endFrame - 5"]
    ["@5"]
    ["D=D-A"]
    ["A=D"]
    ["D=M"]
-
-  ;;  Stash it in new var
-   ["//Stash retAddr"]
    ["@retAddr"]
    ["M=D"]
 
   ;;  Pop the stack as the return value back to arguments which will be the new stack head - 1
    ["//Pop the stack to args which will be new stack head"]
-   (dec-stack-pointer)
+   #_(dec-stack-pointer)
    ["@SP"]
-   ["A=M"]
+   ["A=M-1"]
    ["D=M"]
    ["@ARG"]
    ["A=M"]
@@ -614,7 +625,8 @@ fn-lines
 
 (defn set-sp-pointer-address
   [address]
-  [[(format "@%d" address)]
+  [["//set-sp-pointer-address"]
+   [(format "@%d" address)]
    ["D=A"]
    ["@SP"]
    ["M=D"]])
@@ -622,7 +634,8 @@ fn-lines
 (defn bootstrap
   "Bootstrap code to set up"
   []
-  [(set-sp-pointer-address 256)
+  [["//Bootstrap"]
+   (set-sp-pointer-address 256)
    (call-cmd [] ["call" "Sys.init" "0"])])
 
 (defn add-comment
